@@ -21,4 +21,7 @@ while True:
     result%=num
   else :
     print("Invalid choice")
+
+
+
    
