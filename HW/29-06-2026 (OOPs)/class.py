@@ -1,4 +1,12 @@
 from datetime import datetime 
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+
+
+
 
 class Product:
   def __init__(self,name,brand,price,mfg,exp,qty):
@@ -124,6 +132,84 @@ def bill():
             
       
 def generate_pdf():
+    if len(orders) == 0:
+        print("No orders found to geenerate PDF")
+        return
+    
+    pdf = SimpleDocTemplate("Invoice.pdf")
+
+    elements = []
+
+    styles = getSampleStyleSheet()
+
+    title = Paragraph("Product Management")
+    elements.append(title)
+
+    elements.append(Spacer(1,0.25 * inch))
+
+    data = [
+        ["Product", "Brand", "Price", "Quantity", "Total"]
+    ]
+
+    subtotal = 0
+
+    for item in orders:
+        data.append([
+            item["name"],
+            item["brand"],
+            str(item["price"]),
+            str(item["quantity"]),
+            str(item["total"])
+        ])
+        subtotal += item["total"]
+
+    cgst = subtotal * 0.06
+    sgst = subtotal * 0.06
+    final_total = subtotal + cgst + sgst
+
+    data.append(["","","","Subtotal",f"{subtotal}"])
+    data.append(["","","","CGST",f"{cgst}"])
+    data.append(["","","","SGST",f"{sgst}"])
+    data.append(["","","","Final Bill",f"{final_total}"])
+
+    table = Table(data)
+
+    table.setStyle(TableStyle([
+
+        ('BACKGROUND', (0,0), (-1,0), colors.darkblue),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+
+        ('GRID', (0,0), (-1,-1), 1, colors.black),
+
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+
+        ('BOTTOMPADDING', (0,0), (-1,0), 10),
+
+        ('BACKGROUND', (0,1), (-1,-1), colors.beige)
+
+    ]))
+     
+    elements.append(table)
+
+    elements.append(Spacer(1,0.3 * inch))
+
+    thank = Paragraph(
+        "<b>Thank You For Shopping With Us!</b><br/>Visit Again...!",
+        styles["Heading2"]
+    )
+
+    elements.append(thank)
+
+    # Build PDF
+    pdf.build(elements)
+
+    print("\nInvoice.pdf generated successfully!")
+
+
+
+  
     
 
 print("\n------------------------------------- Products Management -------------------------------")
